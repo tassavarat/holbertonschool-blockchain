@@ -182,3 +182,87 @@ Successfully created EC key pair
 ==17436== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 alex@~/holbertonschool-blockchain/crypto$
 ```
+
+### [2. EC_KEY to public key](./crypto/ec_to_pub.c)
+Write a function that extracts the public key from an `EC_KEY` opaque structure
+
+* Prototype: `uint8_t *ec_to_pub(EC_KEY const *key, uint8_t pub[EC_PUB_LEN]);`, where:
+	* `key` is a pointer to the `EC_KEY` structure to retrieve the public key from. If it is `NULL`, your function must do nothing and fail
+	* `pub` is the address at which to store the extracted public key (The key shall not be compressed)
+* Your function must return a pointer to `pub`
+* `NULL` must be returned upon failure, and there should not be any memory leak
+
+NOTE: It is also possible to extract the private key from an EC_KEY structure, but we’re never going to store one’s private key anywhere in the Blockchain. So we don’t really need it.
+```
+alex@~/holbertonschool-blockchain/crypto$ cat test/ec_to_pub-main.c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "hblk_crypto.h"
+
+void _print_hex_buffer(uint8_t const *buf, size_t len);
+
+/**
+ * main - Entry point
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+int main(void)
+{
+    EC_KEY *key;
+    uint8_t pub[EC_PUB_LEN];
+    uint8_t *test_ptr;
+
+    /* Prerequisites */
+    key = ec_create();
+    if (!key)
+    {
+        fprintf(stderr, "ec_create() failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Successfully created EC key pair\n");
+
+    /* Test `ec_to_pub()` */
+    test_ptr = ec_to_pub(key, pub);
+    if (!test_ptr)
+    {
+        fprintf(stderr, "ec_to_pub() failed\n");
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+    if (test_ptr != pub)
+    {
+        fprintf(stderr, "Return value and pointer differ\n");
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+
+    printf("Public key: ");
+    _print_hex_buffer(pub, EC_PUB_LEN);
+    printf("\n");
+
+    /* Cleanup */
+    EC_KEY_free(key);
+
+    return (EXIT_SUCCESS);
+}
+alex@~/holbertonschool-blockchain/crypto$ gcc -Wall -Wextra -Werror -pedantic -I. -o ec_to_pub-test test/ec_to_pub-main.c provided/_print_hex_buffer.c ec_to_pub.c ec_create.c -lssl -lcrypto
+alex@~/holbertonschool-blockchain/crypto$ valgrind ./ec_to_pub-test
+==18243== Memcheck, a memory error detector
+==18243== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==18243== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==18243== Command: ./ec_to_pub-test
+==18243==
+Successfully created EC key pair
+Public key: 04a6dedb9d6180946b7866fc1a63ceff2aa8012161e0a01c351fb8e408b5863de5a1732497e7f4da0f7ff96e6650a51d0ca64eccd969415f8f53e956aa046991df
+==18243==
+==18243== HEAP SUMMARY:
+==18243==     in use at exit: 0 bytes in 0 blocks
+==18243==   total heap usage: X allocs, X frees, Y bytes allocated
+==18243==
+==18243== All heap blocks were freed -- no leaks are possible
+==18243==
+==18243== For counts of detected and suppressed errors, rerun with: -v
+==18243== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+alex@~/holbertonschool-blockchain/crypto$
+```
