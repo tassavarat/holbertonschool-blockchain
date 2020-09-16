@@ -22,24 +22,16 @@ EC_KEY *ec_from_pub(uint8_t const pub[EC_PUB_LEN])
 	if (!p)
 	{
 		EC_KEY_free(key);
-		EC_GROUP_free((EC_GROUP *)group);
 		return (NULL);
 	}
 	if (!EC_POINT_oct2point(group, p, pub, EC_PUB_LEN, NULL))
-	{
-		EC_KEY_free(key);
-		EC_GROUP_free(group);
-		EC_POINT_free(p);
-		return (NULL);
-	}
+		goto out;
 	if (!EC_KEY_set_public_key(key, p))
-	{
-		EC_KEY_free(key);
-		EC_GROUP_free(group);
-		EC_POINT_free(p);
-		return (NULL);
-	}
-	EC_GROUP_free(group);
+		goto out;
 	EC_POINT_free(p);
 	return (key);
+out:
+	EC_KEY_free(key);
+	EC_POINT_free(p);
+	return (NULL);
 }
