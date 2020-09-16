@@ -368,3 +368,116 @@ Public key: 042f6c2676461c03b57d97562794e6e42c50f7af817b4a5ff0546d09ac046cb46dd2
 ==18821== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 alex@~/holbertonschool-blockchain/crypto$
 ```
+
+### [4. EC_KEY - Save to file](./crypto/ec_save.c)
+Write a function that saves an existing EC key pair on the disk.
+
+* Prototype: `int ec_save(EC_KEY *key, char const *folder);`, where
+	* `key` points to the EC key pair to be saved on disk
+	* `folder` is the path to the folder in which to save the keys (e.g. `/home/hblk/alex`)
+* Your function must respectively return 1 or 0 upon success or failure
+* `folder` must be created if it doesn’t already exist
+	* `<folder>/key.pem` will contain the private key, in the PEM format. The file must be created, or overridden if it already exists (e.g. `/home/alex/.hblk/alex/key.pem`)
+	* `<folder>/key_pub.pem` will contain the public key, in the PEM format. The file must be created, or overridden if it already exists (e.g. `/home/alex/.hblk/alex/key_pub.pem`)
+```
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "hblk_crypto.h"
+
+void _print_hex_buffer(uint8_t const *buf, size_t len);
+
+/**
+ * main - Entry point
+ *
+ * @ac: Arguments count
+ * @av: Arguments vector
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+int main(int ac, char **av)
+{
+    EC_KEY *key;
+    uint8_t pub[EC_PUB_LEN];
+
+    if (ac < 2)
+    {
+        fprintf(stderr, "Usage: %s <path>\n", av[0]);
+        return (EXIT_FAILURE);
+    }
+
+    key = ec_create();
+    ec_to_pub(key, pub);
+
+    printf("Public key: ");
+    _print_hex_buffer(pub, EC_PUB_LEN);
+    printf("\n");
+
+    /* Test `ec_save()` */
+    ec_save(key, av[1]);
+
+    /* Cleanup */
+    EC_KEY_free(key);
+
+    return (EXIT_SUCCESS);
+}
+alex@~/holbertonschool-blockchain/crypto$ gcc -Wall -Wextra -Werror -pedantic -I. -o ec_save-test test/ec_save-main.c ec_save.c ec_create.c ec_to_pub.c provided/_print_hex_buffer.c -lssl -lcrypto
+alex@~/holbertonschool-blockchain/crypto$ ls -l alex
+ls: cannot access alex: No such file or directory
+alex@~/holbertonschool-blockchain/crypto$ ./ec_save-test alex
+Public key: 047867deed2d85786a6d59aec306aad371c3820c30551ea6fd3009a52de7c7815c2234f648d67027ee31ad0930f6d463532d129bdec8add761438393ec9958ff69
+alex@~/holbertonschool-blockchain/crypto$ ls -l alex
+total 8
+-rw-r--r-- 1 vagrant vagrant 438 Dec  9 06:47 key.pem
+-rw-r--r-- 1 vagrant vagrant 390 Dec  9 06:47 key_pub.pem
+alex@~/holbertonschool-blockchain/crypto$ openssl ec -text -noout -in alex/key.pem
+read EC key
+Private-Key: (256 bit)
+priv:
+    16:28:7c:53:cd:d0:0e:d8:01:b4:01:3f:6f:b8:e4:
+    1d:69:7f:b2:95:d4:d6:f4:a9:21:bb:3e:7f:1e:4b:
+    a5:ba
+pub:
+    04:78:67:de:ed:2d:85:78:6a:6d:59:ae:c3:06:aa:
+    d3:71:c3:82:0c:30:55:1e:a6:fd:30:09:a5:2d:e7:
+    c7:81:5c:22:34:f6:48:d6:70:27:ee:31:ad:09:30:
+    f6:d4:63:53:2d:12:9b:de:c8:ad:d7:61:43:83:93:
+    ec:99:58:ff:69
+Field Type: prime-field
+Prime:
+    00:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:
+    ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:fe:ff:
+    ff:fc:2f
+A:    0
+B:    7 (0x7)
+Generator (uncompressed):
+    04:79:be:66:7e:f9:dc:bb:ac:55:a0:62:95:ce:87:
+    0b:07:02:9b:fc:db:2d:ce:28:d9:59:f2:81:5b:16:
+    f8:17:98:48:3a:da:77:26:a3:c4:65:5d:a4:fb:fc:
+    0e:11:08:a8:fd:17:b4:48:a6:85:54:19:9c:47:d0:
+    8f:fb:10:d4:b8
+Order:
+    00:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:
+    ff:fe:ba:ae:dc:e6:af:48:a0:3b:bf:d2:5e:8c:d0:
+    36:41:41
+Cofactor:  1 (0x1)
+alex@~/holbertonschool-blockchain/crypto$ cat alex/key.pem
+-----BEGIN EC PRIVATE KEY-----
+MIIBEwIBAQQgFih8U83QDtgBtAE/b7jkHWl/spXU1vSpIbs+fx5LpbqggaUwgaIC
+AQEwLAYHKoZIzj0BAQIhAP////////////////////////////////////7///wv
+MAYEAQAEAQcEQQR5vmZ++dy7rFWgYpXOhwsHApv82y3OKNlZ8oFbFvgXmEg62ncm
+o8RlXaT7/A4RCKj9F7RIpoVUGZxH0I/7ENS4AiEA/////////////////////rqu
+3OavSKA7v9JejNA2QUECAQGhRANCAAR4Z97tLYV4am1ZrsMGqtNxw4IMMFUepv0w
+CaUt58eBXCI09kjWcCfuMa0JMPbUY1MtEpveyK3XYUODk+yZWP9p
+-----END EC PRIVATE KEY-----
+alex@~/holbertonschool-blockchain/crypto$ cat alex/key_pub.pem
+-----BEGIN PUBLIC KEY-----
+MIH1MIGuBgcqhkjOPQIBMIGiAgEBMCwGByqGSM49AQECIQD/////////////////
+///////////////////+///8LzAGBAEABAEHBEEEeb5mfvncu6xVoGKVzocLBwKb
+/NstzijZWfKBWxb4F5hIOtp3JqPEZV2k+/wOEQio/Re0SKaFVBmcR9CP+xDUuAIh
+AP////////////////////66rtzmr0igO7/SXozQNkFBAgEBA0IABHhn3u0thXhq
+bVmuwwaq03HDggwwVR6m/TAJpS3nx4FcIjT2SNZwJ+4xrQkw9tRjUy0Sm97Irddh
+Q4OT7JlY/2k=
+-----END PUBLIC KEY-----
+alex@~/holbertonschool-blockchain/crypto$
+```
