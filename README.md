@@ -266,3 +266,105 @@ Public key: 04a6dedb9d6180946b7866fc1a63ceff2aa8012161e0a01c351fb8e408b5863de5a1
 ==18243== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 alex@~/holbertonschool-blockchain/crypto$
 ```
+
+### [3. EC_KEY from public key](./crypto/ec_from_pub.c)
+Write a function that creates an `EC_KEY` structure given a public key
+
+* Prototype: `EC_KEY *ec_from_pub(uint8_t const pub[EC_PUB_LEN]);`, where:
+	* `pub` contains the public key to be converted
+* Your function must return a pointer to the created `EC_KEY` structure upon success, or `NULL` upon failure
+* The created `EC_KEY`‘s private key does not have to be initialized/set, we only care about the public one
+```
+alex@~/holbertonschool-blockchain/crypto$ cat test/ec_from_pub-main.c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "hblk_crypto.h"
+
+void _print_hex_buffer(uint8_t const *buf, size_t len);
+
+/**
+ * main - Entry point
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+int main(void)
+{
+    EC_KEY *key, *key2;
+    uint8_t pub[EC_PUB_LEN], pub2[EC_PUB_LEN];
+
+    /* Prerequisites */
+    key = ec_create();
+    if (!key)
+    {
+        fprintf(stderr, "ec_create() failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Successfully created EC key pair\n");
+
+    if (!ec_to_pub(key, pub))
+    {
+        fprintf(stderr, "ec_to_pub() failed\n");
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+
+    printf("Public key: ");
+    _print_hex_buffer(pub, EC_PUB_LEN);
+    printf("\n");
+
+    /* Test `ec_from_pub()` */
+    key2 = ec_from_pub(pub);
+    if (!key2)
+    {
+        fprintf(stderr, "ec_from_pub() failed\n");
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+    if (!EC_KEY_check_key(key2))
+    {
+        fprintf(stderr, "Key2 verification failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Successfully created EC key from public key\n");
+
+    /* Extract public key from new key */
+    if (!ec_to_pub(key2, pub2))
+    {
+        fprintf(stderr, "ec_to_pub() failed\n");
+        EC_KEY_free(key);
+        EC_KEY_free(key2);
+        return (EXIT_FAILURE);
+    }
+    printf("Public key: ");
+    _print_hex_buffer(pub2, EC_PUB_LEN);
+    printf("\n");
+
+    /* Cleanup */
+    EC_KEY_free(key);
+    EC_KEY_free(key2);
+
+    return (EXIT_SUCCESS);
+}
+alex@~/holbertonschool-blockchain/crypto$ gcc -Wall -Wextra -Werror -pedantic -I. -o ec_from_pub-test test/ec_from_pub-main.c provided/_print_hex_buffer.c ec_from_pub.c ec_to_pub.c ec_create.c -lssl -lcrypto
+alex@~/holbertonschool-blockchain/crypto$ valgrind ./ec_from_pub-test
+==18821== Memcheck, a memory error detector
+==18821== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==18821== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==18821== Command: ./ec_from_pub-test
+==18821==
+Successfully created EC key pair
+Public key: 042f6c2676461c03b57d97562794e6e42c50f7af817b4a5ff0546d09ac046cb46dd28e8b2ee6fbab94409e94eafde30ec89b425ea80e6ad66a85a2164e1f5f14e2
+Successfully created EC key from public key
+Public key: 042f6c2676461c03b57d97562794e6e42c50f7af817b4a5ff0546d09ac046cb46dd28e8b2ee6fbab94409e94eafde30ec89b425ea80e6ad66a85a2164e1f5f14e2
+==18821==
+==18821== HEAP SUMMARY:
+==18821==     in use at exit: 0 bytes in 0 blocks
+==18821==   total heap usage: X allocs, X frees, Y bytes allocated
+==18821==
+==18821== All heap blocks were freed -- no leaks are possible
+==18821==
+==18821== For counts of detected and suppressed errors, rerun with: -v
+==18821== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+alex@~/holbertonschool-blockchain/crypto$
+```
