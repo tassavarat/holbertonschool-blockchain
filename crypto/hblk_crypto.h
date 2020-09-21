@@ -13,7 +13,7 @@
 #define PUB_NAME	"key_pub.pem"
 #define PRIV_TYPE	0
 #define PUB_TYPE	1
-#define PUB_LEN		strlen(PUB_NAME)
+#define PUB_LEN		(strlen(PUB_NAME))
 #define EC_CURVE	NID_secp256k1
 
 /* EC_KEY public key octet string length (using 256-bit curve) */
