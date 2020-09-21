@@ -40,7 +40,7 @@ int ec_save(EC_KEY *key, char const *folder)
 {
 	char buf[BUFSIZ];
 
-	if (!key || !folder || strlen(folder) + PUB_LEN > BUFSIZ)
+	if (!key || !folder || strlen(folder) + strlen(PUB_NAME) > BUFSIZ)
 		return (0);
 	if (mkdir(folder, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) ==
 			-1)
