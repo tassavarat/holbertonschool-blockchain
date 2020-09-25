@@ -18,14 +18,14 @@ int write_file(char const *folder, char *fname, int type, EC_KEY *key)
 	fp = fopen(buf, "w");
 	if (!fp)
 		return (0);
+	if (type == PUB_TYPE)
+	{
+		if (!PEM_write_EC_PUBKEY(fp, key))
+			goto out;
+	}
 	if (type == PRIV_TYPE)
 	{
 		if (!PEM_write_ECPrivateKey(fp, key, NULL, NULL, 0, NULL, NULL))
-			goto out;
-	}
-	else if (type == PUB_TYPE)
-	{
-		if (!PEM_write_EC_PUBKEY(fp, key))
 			goto out;
 	}
 	else
@@ -53,9 +53,9 @@ int ec_save(EC_KEY *key, char const *folder)
 	if (mkdir(folder, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) ==
 			-1)
 		return (0);
-	if (!write_file(folder, PRIV_NAME, PRIV_TYPE, key))
-		return (0);
 	if (!write_file(folder, PUB_NAME, PUB_TYPE, key))
+		return (0);
+	if (!write_file(folder, PRIV_NAME, PRIV_TYPE, key))
 		return (0);
 	return (1);
 }
