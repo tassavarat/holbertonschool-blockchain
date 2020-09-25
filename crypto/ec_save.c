@@ -1,37 +1,61 @@
 #include "hblk_crypto.h"
 
 /**
-* ec_save - save pub/private key pair into a file
-* @key: key pair
-* @folder: directory where to store the file
-* Return: 1 on success, 0 on failure
-*/
+ * write_file - write EC key to disk
+ * @folder: path to folder to save keys
+ * @fname: name of file to write
+ * @type: specifies whether to write private or public key
+ * @key: EC key pair to save
+ *
+ * Return: 1 on success, 0 on error
+ */
+int write_file(char const *folder, char *fname, int type, EC_KEY *key)
+{
+	char buf[BUFSIZ];
+	FILE *fp;
+
+	sprintf(buf, "%s/%s", folder, fname);
+	fp = fopen(buf, "w");
+	if (!fp)
+		return (0);
+	if (type == PRIV_TYPE)
+	{
+		if (!PEM_write_ECPrivateKey(fp, key, NULL, NULL, 0, NULL, NULL))
+			goto out;
+	}
+	else if (type == PUB_TYPE)
+	{
+		if (!PEM_write_EC_PUBKEY(fp, key))
+			goto out;
+	}
+	else
+	{
+out:
+		fclose(fp);
+		return (0);
+	}
+	fclose(fp);
+	return (1);
+}
+
+/**
+ * ec_save - save existing EC key pair to disk
+ * @key: EC key pair to save
+ * @folder: path to folder to save keys
+ *
+ * Return: 1 on success, 0 on error
+ */
 int ec_save(EC_KEY *key, char const *folder)
 {
-	char file[512] = {0};
-	FILE *fp;
-	struct stat st = {0};
 
 	if (!key || !folder)
 		return (0);
-	if (stat(folder, &st) == -1)
-	{
-		if (mkdir(folder, 0700) == -1)
-			return (0);
-	}
-	sprintf(file, "%s/%s", folder, "key.pem");
-	fp = fopen(file, "w");
-	if (!fp)
+	if (mkdir(folder, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) ==
+			-1)
 		return (0);
-	if (!PEM_write_ECPrivateKey(fp, key, NULL, NULL, 0, NULL, NULL))
+	if (!write_file(folder, PRIV_NAME, PRIV_TYPE, key))
 		return (0);
-	fclose(fp);
-	sprintf(file, "%s/%s", folder, "key_pub.pem");
-	fp = fopen(file, "w");
-	if (!fp)
+	if (!write_file(folder, PUB_NAME, PUB_TYPE, key))
 		return (0);
-	if (!PEM_write_EC_PUBKEY(fp, key))
-		return (0);
-	fclose(fp);
 	return (1);
 }
