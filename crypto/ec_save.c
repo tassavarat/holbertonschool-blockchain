@@ -20,7 +20,8 @@ int write_file(char const *folder, char *fname, int type, EC_KEY *key)
 		return (0);
 	if (type == PRIV_TYPE)
 	{
-		if (!PEM_write_ECPrivateKey(fp, key, NULL, NULL, 0, NULL, NULL))
+		if (!PEM_write_ECPrivateKey(fp, key, NULL, NULL, 0, NULL,
+					NULL))
 			goto out;
 	}
 	else if (type == PUB_TYPE)
