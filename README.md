@@ -481,3 +481,73 @@ Q4OT7JlY/2k=
 -----END PUBLIC KEY-----
 alex@~/holbertonschool-blockchain/crypto$
 ```
+
+### [5. EC_KEY - Load from file](./crypto/ec_load.c)
+Write a function that loads an EC key pair from the disk.
+
+* Prototype: `EC_KEY *ec_load(char const *folder);`, where
+	* `folder` is the path to the folder from which to load the keys (e.g. `/home/hblk/alex`)
+* Your function must return a pointer to the created EC key pair upon success, or `NULL` upon failure
+* From the folder `folder`:
+	* `<folder>/key.pem` will contain the private key, in the PEM format.
+	* `<folder>/key_pub.pem` will contain the public key, in the PEM format.
+```
+alex@~/holbertonschool-blockchain/crypto$ cat test/ec_load-main.c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "hblk_crypto.h"
+
+void _print_hex_buffer(uint8_t const *buf, size_t len);
+
+/**
+ * main - Entry point
+ *
+ * @ac: Arguments count
+ * @av: Arguments vector
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+int main(int ac, char **av)
+{
+    EC_KEY *key;
+    EC_KEY *key2;
+    uint8_t pub[EC_PUB_LEN];
+
+    if (ac < 2)
+    {
+        fprintf(stderr, "Usage: %s <path>\n", av[0]);
+        return (EXIT_FAILURE);
+    }
+
+    key = ec_create();
+    ec_to_pub(key, pub);
+
+    printf("Public key: ");
+    _print_hex_buffer(pub, EC_PUB_LEN);
+    printf("\n");
+
+    ec_save(key, av[1]);
+
+    /* Test `ec_load()` */
+    key2 = ec_load(av[1]);
+    ec_to_pub(key2, pub);
+
+    printf("Public key: ");
+    _print_hex_buffer(pub, EC_PUB_LEN);
+    printf("\n");
+
+    /* Cleanup */
+    EC_KEY_free(key);
+    EC_KEY_free(key2);
+
+    return (EXIT_SUCCESS);
+}
+alex@~/holbertonschool-blockchain/crypto$ gcc -Wall -Wextra -Werror -pedantic -I. -o ec_load-test test/ec_load-main.c ec_load.c ec_save.c ec_create.c ec_to_pub.c provided/_print_hex_buffer.c -lssl -lcrypto
+alex@~/holbertonschool-blockchain/crypto$ ls -l alex
+ls: cannot access alex: No such file or directory
+alex@~/holbertonschool-blockchain/crypto$ ./ec_load-test alex
+Public key: 04acfb9b1f03ea8a23c913104d68ee52bff7f6212e13d7bb33c1727b01280ae7adc135fcafd04cdb09687ef0879d671af74ddbffccbbe4abb3589e1ac867ce8336
+Public key: 04acfb9b1f03ea8a23c913104d68ee52bff7f6212e13d7bb33c1727b01280ae7adc135fcafd04cdb09687ef0879d671af74ddbffccbbe4abb3589e1ac867ce8336
+alex@~/holbertonschool-blockchain/crypto$
+```
