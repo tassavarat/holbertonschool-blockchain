@@ -47,7 +47,6 @@ out:
  */
 int ec_save(EC_KEY *key, char const *folder)
 {
-
 	if (!key || !folder)
 		return (0);
 	if (mkdir(folder, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) ==
