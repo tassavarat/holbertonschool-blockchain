@@ -9,7 +9,7 @@
  */
 int ec_save(EC_KEY *key, char const *folder)
 {
-	char buf[BUFSIZ];
+	char buf[BUFSIZ] = {0};
 	FILE *fp;
 
 	if (!key || !folder)

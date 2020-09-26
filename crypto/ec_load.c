@@ -9,7 +9,7 @@
 EC_KEY *ec_load(char const *folder)
 {
 	EC_KEY *key = NULL;
-	char buf[BUFSIZ];
+	char buf[BUFSIZ] = {0};
 	FILE *fp;
 
 	if (!folder)
