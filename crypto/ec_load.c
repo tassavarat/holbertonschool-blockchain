@@ -15,13 +15,13 @@ EC_KEY *ec_load(char const *folder)
 	if (!folder)
 		return (NULL);
 
-	sprintf(buf, "%s/%s", folder, PUB_NAME);
+	sprintf(buf, "%s/%s", folder, PUB_FILENAME);
 	fp = fopen(buf, "r");
 	if (!fp)
 		return (NULL);
 	if (!PEM_read_EC_PUBKEY(fp, &key, NULL, NULL))
 		goto out;
-	sprintf(buf, "%s/%s", folder, PRIV_NAME);
+	sprintf(buf, "%s/%s", folder, PRI_FILENAME);
 	fp = fopen(buf, "r");
 	if (!fp)
 		return (NULL);

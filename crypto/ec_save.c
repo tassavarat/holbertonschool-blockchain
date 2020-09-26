@@ -17,14 +17,14 @@ int ec_save(EC_KEY *key, char const *folder)
 	if (mkdir(folder, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) ==
 			-1)
 		return (0);
-	sprintf(buf, "%s/%s", folder, PUB_NAME);
+	sprintf(buf, "%s/%s", folder, PUB_FILENAME);
 	fp = fopen(buf, "w");
 	if (!fp)
 		return (0);
 	if (!PEM_write_EC_PUBKEY(fp, key))
 		goto out;
 	fclose(fp);
-	sprintf(buf, "%s/%s", folder, PRIV_NAME);
+	sprintf(buf, "%s/%s", folder, PRI_FILENAME);
 	fp = fopen(buf, "w");
 	if (!fp)
 		return (0);
