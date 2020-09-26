@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 
 #define PUB_FILENAME	"key_pub.pem"
-#define PRIV_FILENAME	"key.pem"
+#define PRI_FILENAME	"key.pem"
 #define EC_CURVE	NID_secp256k1
 
 /* EC_KEY public key octet string length (using 256-bit curve) */
