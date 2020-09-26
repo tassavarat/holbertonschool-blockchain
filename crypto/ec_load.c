@@ -9,10 +9,10 @@
 EC_KEY *ec_load(char const *folder)
 {
 	EC_KEY *key = NULL;
-	char buf[BUFSIZ] = {0};
+	char buf[BUFSIZ];
 	FILE *fp;
 
-	if (!folder)
+	if (!folder || strlen(folder) + strlen(PUB_FILENAME) > BUFSIZ)
 		return (NULL);
 
 	sprintf(buf, "%s/%s", folder, PUB_FILENAME);
