@@ -551,3 +551,91 @@ Public key: 04acfb9b1f03ea8a23c913104d68ee52bff7f6212e13d7bb33c1727b01280ae7adc1
 Public key: 04acfb9b1f03ea8a23c913104d68ee52bff7f6212e13d7bb33c1727b01280ae7adc135fcafd04cdb09687ef0879d671af74ddbffccbbe4abb3589e1ac867ce8336
 alex@~/holbertonschool-blockchain/crypto$
 ```
+
+### [6. Signature](./crypto/ec_sign.c)
+Write a function that signs a given set of bytes, using a given EC_KEY private key
+
+* Prototype: `uint8_t *ec_sign(EC_KEY const *key, uint8_t const *msg, size_t msglen, sig_t *sig);`, where:
+	* `key` points to the `EC_KEY` structure containing the private key to be used to perform the signature
+	* `msg` points to the `msglen` characters to be signed
+	* `sig` holds the address at which to store the signature
+	* If either `key` or `msg` is NULL, your function must fail
+* `sig->sig` does not need to be zero-terminated. If you feel like you want to zero-terminate it, make sure that `sig->len` holds the size of the signature without the trailing zero byte
+* Your function must return a pointer to the signature buffer upon success (`sig->sig`)
+* `NULL` must be returned upon failure
+```
+alex@~/holbertonschool-blockchain/crypto$ cat test/ec_sign-main.c
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "hblk_crypto.h"
+
+void _print_hex_buffer(uint8_t const *buf, size_t len);
+
+/**
+ * test_ec_sign - Test the ec_sign function
+ *
+ * @key: Pointer to the EC Key pair to use to sign the message
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+static int test_ec_sign(EC_KEY const *key)
+{
+    uint8_t const str[] = "Holberton";
+    sig_t sig;
+
+    if (!ec_sign(key, str, strlen((char *)str), &sig))
+    {
+        fprintf(stderr, "ec_sign() failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Signature of \"%s\": ", str);
+    _print_hex_buffer(sig.sig, sig.len);
+    printf("\n");
+
+    return (EXIT_SUCCESS);
+}
+
+/**
+ * main - Entry point
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+int main(void)
+{
+    EC_KEY *key;
+
+    /* Prerequisites */
+    key = ec_create();
+    if (!key)
+    {
+        fprintf(stderr, "ec_create() failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Successfully created EC key pair\n");
+
+    /* Test `ec_sign()` */
+    if (test_ec_sign(key) != EXIT_SUCCESS)
+    {
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+    if (test_ec_sign(key) != EXIT_SUCCESS)
+    {
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+
+    /* Cleanup */
+    EC_KEY_free(key);
+
+    return (EXIT_SUCCESS);
+}
+alex@~/holbertonschool-blockchain/crypto$ gcc -Wall -Wextra -Werror -pedantic -I. -o ec_sign-test test/ec_sign-main.c provided/_print_hex_buffer.c ec_sign.c ec_create.c -lssl -lcrypto
+alex@~/holbertonschool-blockchain/crypto$ ./ec_sign-test
+Successfully created EC key pair
+Signature of "Holberton": 3044022071847445398a7aee5c3c3b112fc7d067d8c6d11a91bfb8c681c5300a0e9541b8022045f0741c75b7ce499c0cb5508649520f62160b10ba5925fabe1918e641e80255
+Signature of "Holberton": 304502204349c8265cdcf0cb533a2c44f591440350040d44d426ff7304a07b838f5c5e7202210092edcbdaa61d16d7a9933177fde5b1a8151699bf1b19e6ae09e774f045617966
+alex@~/holbertonschool-blockchain/crypto$
+```
