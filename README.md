@@ -639,3 +639,98 @@ Signature of "Holberton": 3044022071847445398a7aee5c3c3b112fc7d067d8c6d11a91bfb8
 Signature of "Holberton": 304502204349c8265cdcf0cb533a2c44f591440350040d44d426ff7304a07b838f5c5e7202210092edcbdaa61d16d7a9933177fde5b1a8151699bf1b19e6ae09e774f045617966
 alex@~/holbertonschool-blockchain/crypto$
 ```
+
+### [7. Signature verification](./crypto/ec_verify.c)
+Write a function that verifies the signature of a given set of bytes, using a given EC_KEY public key
+
+* Prototype: `int ec_verify(EC_KEY const *key, uint8_t const *msg, size_t msglen, sig_t const *sig);`, where:
+	* `key` points to the `EC_KEY` structure containing the public key to be used to verify the signature
+	* `msg` points to the `msglen` characters to verify the signature of
+	* `sig` points to the signature to be checked
+	* If either `key`, `msg` or `sig` is NULL, your function must fail
+* Your function must return 1 if the signature is valid, and 0 otherwise
+```
+alex@~/holbertonschool-blockchain/crypto$ cat test/ec_verify-main.c
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "hblk_crypto.h"
+
+void _print_hex_buffer(uint8_t const *buf, size_t len);
+
+/**
+ * test_ec_sign - Test the ec_sign function
+ *
+ * @key: Pointer to the EC Key pair to use to sign the message
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+static int test_ec_sign(EC_KEY const *key)
+{
+    uint8_t const str[] = "Holberton";
+    sig_t sig;
+
+    if (!ec_sign(key, str, strlen((char *)str), &sig))
+    {
+        fprintf(stderr, "ec_sign() failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Signature of \"%s\": ", str);
+    _print_hex_buffer(sig.sig, sig.len);
+    printf("\n");
+
+    if (!ec_verify(key, str, strlen((char *)str), &sig))
+    {
+        fprintf(stderr, "ec_verify() failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Signature verified\n");
+
+    return (EXIT_SUCCESS);
+}
+
+/**
+ * main - Entry point
+ *
+ * Return: EXIT_SUCCESS or EXIT_FAILURE
+ */
+int main(void)
+{
+    EC_KEY *key;
+
+    /* Prerequisites */
+    key = ec_create();
+    if (!key)
+    {
+        fprintf(stderr, "ec_create() failed\n");
+        return (EXIT_FAILURE);
+    }
+    printf("Successfully created EC key pair\n");
+
+    /* Test `ec_verify()` */
+    if (test_ec_sign(key) != EXIT_SUCCESS)
+    {
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+    if (test_ec_sign(key) != EXIT_SUCCESS)
+    {
+        EC_KEY_free(key);
+        return (EXIT_FAILURE);
+    }
+
+    /* Cleanup */
+    EC_KEY_free(key);
+
+    return (EXIT_SUCCESS);
+}
+alex@~/holbertonschool-blockchain/crypto$ gcc -Wall -Wextra -Werror -pedantic -I. -o ec_verify-test test/ec_verify-main.c provided/_print_hex_buffer.c ec_verify.c ec_sign.c ec_create.c -lssl -lcrypto
+alex@~/holbertonschool-blockchain/crypto$ ./ec_verify-test
+Successfully created EC key pair
+Signature of "Holberton": 304402204e6f121cc2ecdc9a49c81e163ac7b41c53905cb241d48f537dc1db569bb47c750220451dec8ada9ad9ac412e923e91f061742ec6eb2586b8726acff8da05d915271b
+Signature verified
+Signature of "Holberton": 3044022078a379f78868c573c3c9e8afe1c68318f8d4b71be12cd249c064c1aa9b0e780a022063dd736e033cf5d8d3522adb838fdcf44defc2d8f3e917910f3151f2ab707773
+Signature verified
+alex@~/holbertonschool-blockchain/crypto$
+```
