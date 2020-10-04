@@ -734,3 +734,31 @@ Signature of "Holberton": 3044022078a379f78868c573c3c9e8afe1c68318f8d4b71be12cd2
 Signature verified
 alex@~/holbertonschool-blockchain/crypto$
 ```
+
+### [8. Library](./crypto/Makefile)
+Write a Makefile that compiles all the previous functions and archives them into a static library for future use.
+
+The library must be called `libhblk_crypto.a`, and your Makefile must define a rule for this file.
+```
+alex@~/holbertonschool-blockchain/crypto$ make libhblk_crypto.a
+[...]
+alex@~/holbertonschool-blockchain/crypto$ ar -t libhblk_crypto.a
+sha256.o
+ec_create.o
+ec_to_pub.o
+ec_from_pub.o
+ec_save.o
+ec_load.o
+ec_sign.o
+ec_verify.o
+alex@~/holbertonschool-blockchain/crypto$ nm --defined-only libhblk_crypto.a | grep T | cut -d ' ' -f3
+sha256
+ec_create
+ec_to_pub
+ec_from_pub
+ec_save
+ec_load
+ec_sign
+ec_verify
+alex@~/holbertonschool-blockchain/crypto$
+```
